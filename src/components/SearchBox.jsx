@@ -1,13 +1,12 @@
 import React from 'react'
 import { CiSearch } from 'react-icons/ci';
 
-const SearchBox = ({ setSearchQuery, searchQuery }) => {
+const SearchBox = ({ setSearchQuery, searchQuery,placeholder }) => {
   return (
-    <div>
-      <div className="w-full relative flex items-center mt-[10px]">
+      <div className="w-[300px] relative flex items-center">
         <input
           type="text"
-          placeholder="Search for a capsule"
+          placeholder={placeholder}
           className="bg-[#F7F7F9] w-full pl-[45px] outline-none h-12  placeholder:pl- placeholder:text-[#D1D3D4] placeholder:text-xs"
           name="query"
           value={searchQuery}
@@ -17,7 +16,6 @@ const SearchBox = ({ setSearchQuery, searchQuery }) => {
             <CiSearch size={24} color="#D1D3D4" />
           </div>
       </div>
-    </div>
   );
 };
 
