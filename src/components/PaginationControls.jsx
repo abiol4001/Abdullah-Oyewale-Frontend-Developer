@@ -18,8 +18,6 @@ function PaginationControls({
     return Math.ceil(totalItems / perPage);
   };
 
-  console.log(getTotalPages());
-
   const handlePreviousPage = () => {
     if (currentPage > 1) {
         setIsLoading(true)

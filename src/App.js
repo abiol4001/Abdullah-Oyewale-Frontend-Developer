@@ -1,17 +1,19 @@
 import "./App.css";
 import Navbar from "./components/Navbar";
 import capsule from "../src/assets/capsule.png";
-import minicapsule from "../src/assets/minicapsule.png";
 import SearchBox from "./components/SearchBox";
 import { useEffect, useState } from "react";
 import { RiArrowDownSFill } from "react-icons/ri";
 import PaginationControls from "./components/PaginationControls";
 import { FallingLines } from "react-loader-spinner";
+import CapsuleDisplay from "./components/CapsuleDisplay";
 
 function App() {
+  // State variables
   const [searchQuery, setSearchQuery] = useState("");
   const [searchQueryCategory, setSearchQueryCategory] = useState("");
-  const [capsules, setCapsules] = useState([]);
+  const [capsules, setCapsules] = useState();
+  const [initialCapsules, setInitialCapsules] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
   const [category, setCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,15 +24,18 @@ function App() {
 
   useEffect(() => {
     fetchAllCapsules();
-  }, [currentPage, searchQuery, searchQueryCategory]);
+  }, [currentPage]);
+
+  console.log(initialCapsules);
+
+  console.log(new Date("2010-12-08T15:43:00.000Z").toLocaleDateString());
+  console.log(searchQueryCategory);
 
   /**
    * Function to fetch all capsules from the SpaceX API.
    *
    * @async
    * @function fetchAllCapsules
-   * @returns {Promise<Array>} An array of capsule objects.
-   * @throws {Error} If the request fails or the response is not JSON.
    */
   async function fetchAllCapsules() {
     try {
@@ -49,17 +54,19 @@ function App() {
 
       const data = await response.json();
       setCapsules(data);
-
+      setInitialCapsules(data);
     } catch (error) {
       throw new Error(`An error occurred: ${error.message}`);
     }
   }
 
+  // Function to handle search
   const handleSearch = () => {
+    setCapsules(initialCapsules);
     setIsLoading(true);
 
     setTimeout(() => {
-      const updatedCapsules = capsules
+      const updatedCapsules = initialCapsules
         .filter(
           (item) =>
             item.capsule_id.includes(searchQuery) ||
@@ -71,10 +78,11 @@ function App() {
               ? item.status
                   .toLowerCase()
                   .includes(searchQueryCategory.toLowerCase())
-              : // : category.toLowerCase() === "original launch"
-              // ? item.original_launch
-              //     .includes(searchQueryCategory.toLowerCase())
-              category.toLowerCase() === "type"
+              : category.toLowerCase() === "original launch"
+              ? new Date(item.original_launch)
+                  .toLocaleDateString()
+                  .includes(searchQueryCategory)
+              : category.toLowerCase() === "type"
               ? item.type
                   .toLowerCase()
                   .includes(searchQueryCategory.toLowerCase())
@@ -82,7 +90,7 @@ function App() {
             : true
         );
       setCapsules(updatedCapsules);
-      setIsLoading(false)
+      setIsLoading(false);
     }, 2000);
   };
   return (
@@ -90,6 +98,7 @@ function App() {
       <Navbar />
       {/* Hero Section */}
       <section className="h-[calc(100vh-98px)} px-4 lg:px-20 flex flex-col lg:flex-row lg:py-20">
+        {/* Left Column */}
         <div className="flex-1 py-8 lg:py-16">
           <h1 className="text-[42px] font-[700] lg:w-[480px] leading-tight">
             Reach for the Stars with SpaceX Capsules
@@ -105,6 +114,7 @@ function App() {
             Join today
           </button>
         </div>
+        {/* Right Column */}
         <div className="flex-1">
           <img src={capsule} alt="" className="" />
         </div>
@@ -112,7 +122,7 @@ function App() {
 
       {/* Search form  */}
       <section className="px-4 lg:px-20 flex flex-col gap-10 pt-16 lg:pt-0">
-        {/* Using the Category to make search */}
+        {/* Category Filter */}
         <div className="flex flex-col lg:flex-row gap-y-5 items-center lg:gap-10">
           <div className="relative">
             <button
@@ -194,7 +204,7 @@ function App() {
       </section>
 
       {/* Data display section */}
-      <section className="px-4 lg:px-20 py-10">
+      <section className="px-4 lg:px-20 py-10 min-h-[300px]">
         <div>
           {/* <h1>Capsules List</h1> */}
           {isLoading && (
@@ -210,26 +220,9 @@ function App() {
           {!isLoading && (
             <ul className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 place-items-center gap-10 lg:gap-16">
               {capsules &&
-                capsules.slice(perPage, itemsPerPage).map((item) => (
-                  <li
-                    key={item.capsule_serial}
-                    className="h-[400px] w-[300px] text-center ring-1 ring-gray-400 rounded-sm relative cursor-pointer group overflow-hidden"
-                  >
-                    <div className="h-[80%] overflow-hidden">
-                      <img
-                        src={minicapsule}
-                        alt=""
-                        className="object-cover w-full h-full group-hover:scale-110 transition"
-                      />
-                    </div>
-                    <p className="text-gray-600 mt-4">{`${item.capsule_id} ${item.capsule_serial}`}</p>
-                    {item.status === "retired" && (
-                      <div className="bg-white text-sm text-[rgb(28,82,132)] px-4 py-2 rounded-sm absolute left-2 top-2">
-                        {item.status}
-                      </div>
-                    )}
-                  </li>
-                ))}
+                capsules
+                  .slice(perPage, itemsPerPage)
+                  .map((item) => <CapsuleDisplay item={item} />)}
             </ul>
           )}
           {capsules && (
